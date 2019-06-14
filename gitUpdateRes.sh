@@ -1,4 +1,5 @@
 #!/bin/bash
+cd /Sterno/results/
 git add -A
 if [ $# -eq 0 ]
 then 
