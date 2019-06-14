@@ -67,7 +67,7 @@ int probe(){
 
 int writeCsv(){
 	ofstream myfile;
-	myfile.open ("bluk.csv", ios::in | ios::app);
+	myfile.open ("/Sterno/results/bigul.csv", ios::in | ios::app);
 	if (myfile.is_open()){
 		printf ("Registering Event \n");
 		myfile << Month << "," << Date << "," << Hour << "," << Min << "," << Sec << "," << eventType <<  "\n";

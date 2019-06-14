@@ -1,0 +1,5 @@
+#!/bin/sh
+
+g++ Monitor.cpp -o monitor
+
+
