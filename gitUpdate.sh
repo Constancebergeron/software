@@ -3,7 +3,7 @@ cd /Sterno/results/test.csv
 git add -A
 if [ $# -eq 0 ]
 then 
-git commit -m "rien a voir ici"
+git commit -m "Updated Automaticaly by the Beagle"
 else 
 git commit -m "$*"
 fi
