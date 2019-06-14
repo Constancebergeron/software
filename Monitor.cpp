@@ -36,7 +36,7 @@ int Sec;
 int Date;
 int Month;
 
-int probeRes;
+int probeRes =0;
 //int bglTime;
 //int bglCount = 0;
 
@@ -63,6 +63,7 @@ Month = (Month + 1);
 
 int probe(){
 // do some stuff
+probeRes = 0;
 }
 
 int writeCsv(){
@@ -107,7 +108,7 @@ if (bglCount == 60) {
 }
 // End of Hourly Registration
 //Power Good
-printf ("checking power"); 	// dummy, probe if beagle pin is 0 or 1
+//printf ("checking power"); 	// dummy, probe if beagle pin is 0 or 1
 				// if ac present relay open = pin float
 				// if ac not present relay closed = pin 5V
 				// if relay not installed, always float and program runs 
@@ -120,7 +121,7 @@ pwrGood = 1;
 pwrTrig = 0;
 }
 
-if (pwrTrig && probeRes == 0){
+if (pwrTrig == 0 && probeRes == 0){
 getTime();
 eventType = "PWR-Bon";
 writeCsv();
@@ -128,7 +129,7 @@ pwrTrig = 1;
 
 }
 
-printf ("Gznui");   //Dummy, delete
+printf ("Testing in Progress");   //Dummy, delete
 
 }
 
