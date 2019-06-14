@@ -77,6 +77,11 @@ int writeCsv(){
 	return 0; 
 }
 
+int resetReg() {
+// Must Do some stuff
+// write 0 to reg01
+}
+
 
 int main(){
 
@@ -127,11 +132,20 @@ eventType = "PWR-Bon";
 writeCsv();
 pwrTrig = 1;
 
-}
+} 
 
 printf ("Testing in Progress");   //Dummy, delete
 
 }
+
+// update files on Github
+// check if between 9 and 4
+// check if try counter = 0
+// check if reg01 = 0   /  try counter =10 min
+// if yes start update
+// if no do nothing
+// clock for the try counter
+// at 4 01 pm reset reg01
 
 return 0;
 
