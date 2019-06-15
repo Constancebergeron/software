@@ -112,6 +112,7 @@ int pwrTrig = 1;
 
 int bglCount = 0;
 int bglTime;
+int bglTime2;
 
 getTime();
 eventType = "MS-Rst";
@@ -127,7 +128,7 @@ if (Min != bglTime){
     bglTime = Min;
 }
 
-if (bglCount == 60) {
+if (bglCount == 1) {	//modified remettre a 60
     getTime();
     eventType = "MH-Reg";
     writeCsv();
@@ -165,11 +166,21 @@ if (updateComplete == 0){
   if (Hour >= 7 && Hour <= 16){ 
   readReg();
     if (regVal == 0 && readDelay == 0){
-    readDelay = 10;
+    readDelay = 1; // modified replacer par 10 pour 10 min
     eventType = "UPDTT"; // for testing purpose only delete
     writeCsv();   	 // for testing purpose only delete
+    bglTime2 = Min;
     printf ("reg 0");  // remplacer par execute git synch
     }
+    else {
+    printf ("no avail\n");
+    getTime();
+        if (Min != bglTime2){
+	bglTime2 = Min;
+	readDelay = (readDelay - 1);
+        }
+    }
+
   }
 }
 
