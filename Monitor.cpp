@@ -37,6 +37,10 @@ int Date;
 int Month;
 
 int probeRes =0;
+
+int regVal = 0;
+int readDelay = 0;
+int updateComplete = 0;
 //int bglTime;
 //int bglCount = 0;
 
@@ -82,8 +86,26 @@ int resetReg() {
 // write 0 to reg01
 }
 
+int readReg(){
+string line;
+ifstream myfile ("/Sterno/Beagle/Reg/.reg01");
+if (myfile.is_open()){
+while (getline (myfile,line)){
+printf ("Checking Registry\n");
+	if (line == "0"){
+	regVal = 0;
+	}
+	else regVal = 1;
+	}
+myfile.close();
+}
+else cout << "Unable to open File";
+}
+
 
 int main(){
+
+//int updatComplete = 0;
 
 int pwrGood = 0; 	//0 = ac present
 int pwrTrig = 1;
@@ -134,19 +156,33 @@ pwrTrig = 1;
 
 } 
 
-printf ("Testing in Progress");   //Dummy, delete
+printf ("Testing in Progress\n");   //Dummy, delete
 
+//}
+
+if (updateComplete == 0){
+  getTime();
+  if (Hour >= 7 && Hour <= 16){ 
+  readReg();
+    if (regVal == 0 && readDelay == 0){
+    readDelay = 10;
+    eventType = "UPDTT"; // for testing purpose only delete
+    writeCsv();   	 // for testing purpose only delete
+    printf ("reg 0");  // remplacer par execute git synch
+    }
+  }
 }
 
 // update files on Github
 // check if between 9 and 4
 // check if try counter = 0
+
 // check if reg01 = 0   /  try counter =10 min
 // if yes start update
 // if no do nothing
 // clock for the try counter
 // at 4 01 pm reset reg01
-
+}
 return 0;
 
 }
