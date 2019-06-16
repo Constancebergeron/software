@@ -41,8 +41,9 @@ int probeRes =0;
 int regVal = 0;
 int readDelay = 0;
 int updateComplete = 0;
-//int bglTime;
-//int bglCount = 0;
+int regReset = 0;
+int bglTime3 = 0;
+int bglCount2 = 0;
 
 //int pwrGood = 0;	// 0 means power present, 1 power not present
 
@@ -81,9 +82,27 @@ int writeCsv(){
 	return 0; 
 }
 
-int resetReg() {
-// Must Do some stuff
-// write 0 to reg01
+int resetReg() {	//Original code to hard to test bkp @/Beagle/test 
+if (bglCount2 == 2){	// genre 10 min
+bglCount2 = 0;
+eventType = "reseting reg";		//a 5 pour reset et 6 pour regReset
+writeCsv();				//(sinon il le reset pendant  1 heure)
+ofstream myfile;
+myfile.open ("/Sterno/Beagle/Reg/.reg01");
+    if (myfile.is_open()){
+    myfile << "0";
+    myfile.close();
+    updateComplete = 0;
+    }
+    else printf ("Unable to open File");
+    }
+
+getTime();
+if (Min != bglTime3){
+bglCount2 = (bglCount2 + 1);
+bglTime3 = Min;
+
+}
 }
 
 int readReg(){
@@ -163,39 +182,36 @@ printf ("Testing in Progress\n");   //Dummy, delete
 
 if (updateComplete == 0){
   getTime();
-  if (Hour >= 7 && Hour <= 16){ 
+  if (Hour >= 7 && Hour <= 22){ 
   readReg();
+// ligne prochainne marche pas
+if (regVal == 1){updateComplete = 1;}	// On fait ca pcq on veut pas caller readReg tout le temps
     if (regVal == 0 && readDelay == 0){
-    readDelay = 1; // modified replacer par 10 pour 10 min
+    readDelay = 10; // modified replacer par 10 pour 10 min
     eventType = "UPDTT"; // for testing purpose only delete
     writeCsv();   	 // for testing purpose only delete
+// manque genre bglcount
     bglTime2 = Min;
-    printf ("reg 0");  // remplacer par execute git synch
-    }
+    system("/Sterno/Software/gitUpdateRes.sh"); //actual result synch
+  }
     else {
     printf ("no avail\n");
     getTime();
-        if (Min != bglTime2){
+        if (Min != bglTime2){	//La minute a changee
 	bglTime2 = Min;
 	readDelay = (readDelay - 1);
+
         }
     }
 
   }
 }
 
-// update files on Github
-// check if between 9 and 4
-// check if try counter = 0
+resetReg(); // reset le reg a toutes le 24 heures
 
-// check if reg01 = 0   /  try counter =10 min
-// if yes start update
-// if no do nothing
-// clock for the try counter
-// at 4 01 pm reset reg01
 }
 return 0;
 
 }
-
+// ou writereg?
 
