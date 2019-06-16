@@ -35,21 +35,12 @@ int Min;
 int Sec;
 int Date;
 int Month;
-
-int probeRes =0;
-
+int probeRes = 0;
 int regVal = 0;
-int readDelay = 0;
 int updateComplete = 0;
-int regReset = 0;
-int bglTime3 = 0;
-int bglCount2 = 0;
-
+int updateCount = 0;
 //int pwrGood = 0;	// 0 means power present, 1 power not present
-
 string eventType = "blank";
-
-
 int getTime(){
 time_t currentTime;
 struct tm *localTime;
@@ -69,7 +60,7 @@ Month = (Month + 1);
 int probe(){
 // do some stuff
 probeRes = 0;
-}
+           }
 
 int writeCsv(){
 	ofstream myfile;
@@ -77,33 +68,25 @@ int writeCsv(){
 	if (myfile.is_open()){
 		printf ("Registering Event \n");
 		myfile << Month << "," << Date << "," << Hour << "," << Min << "," << Sec << "," << eventType <<  "\n";
-		myfile.close();}
+		myfile.close();  }
 	else printf("Unable to open file\n");
 	return 0; 
-}
+               }
 
-int resetReg() {	//Original code to hard to test bkp @/Beagle/test 
-if (bglCount2 == 2){	// genre 10 min
-bglCount2 = 0;
-eventType = "reseting reg";		//a 5 pour reset et 6 pour regReset
-writeCsv();				//(sinon il le reset pendant  1 heure)
+int resetReg() {
+eventType = "reseting reg";		
+writeCsv();				
 ofstream myfile;
 myfile.open ("/Sterno/Beagle/Reg/.reg01");
     if (myfile.is_open()){
     myfile << "0";
     myfile.close();
     updateComplete = 0;
-    }
+    updateCount = 0;                     }
     else printf ("Unable to open File");
-    }
+               }
 
-getTime();
-if (Min != bglTime3){
-bglCount2 = (bglCount2 + 1);
-bglTime3 = Min;
 
-}
-}
 
 int readReg(){
 string line;
@@ -117,43 +100,41 @@ printf ("Checking Registry\n");
 	else regVal = 1;
 	}
 myfile.close();
-}
+                    }
 else cout << "Unable to open File";
-}
+              }
 
-
+///////////////////// Main Function /////////////////////////
 int main(){
-// vas faloir initialiser les beagTime
-//int updatComplete = 0;
 
 int pwrGood = 0; 	//0 = ac present
 int pwrTrig = 1;
 
-int bglCount = 0;
-int bglTime;
-int bglTime2 = 0;
-//int bglTime3 = 0;
-
 getTime();
 eventType = "MS-Rst";
 writeCsv();
-bglTime = Min;
 
+int regTime = Min;
+int updateTime = Min;
+int watchTime = Min;
+int regCount = 0;
+//int updateCount = 0;
+int watchCount = 0;
 while (1) {
 getTime();
 
 // Start of Hourly Registration
-if (Min != bglTime){
-    bglCount = (bglCount + 1);
-    bglTime = Min;
-}
+if (Min != watchTime){
+    watchCount = (watchCount + 1);
+    watchTime = Min;
+                     }
 
-if (bglCount == 1) {	//modified remettre a 60
+if (watchCount == 1) {	//modified remettre a 60
     getTime();
     eventType = "MH-Reg";
     writeCsv();
-    bglCount = 0;
-}
+    watchCount = 0;
+                     }
 // End of Hourly Registration
 //Power Good
 //printf ("checking power"); 	// dummy, probe if beagle pin is 0 or 1
@@ -167,51 +148,55 @@ eventType = "PWR-Out";
 writeCsv();
 pwrGood = 1;
 pwrTrig = 0;
-}
+                         }
 
 if (pwrTrig == 0 && probeRes == 0){
 getTime();
 eventType = "PWR-Bon";
 writeCsv();
 pwrTrig = 1;
+                                  } 
 
-} 
 
 printf ("Testing in Progress\n");   //Dummy, delete
 
-//}
+
+////// Start of Update Sequence /////////
 
 if (updateComplete == 0){
   getTime();
-//  bglTime = Min;
   if (Hour >= 7 && Hour <= 22){ 
   readReg();
-// ligne prochainne marche pas
 if (regVal == 1){updateComplete = 1;}	// On fait ca pcq on veut pas caller readReg tout le temps
-    if (regVal == 0 && readDelay == 0){
-    readDelay = 3; // modified replacer par 10 pour 10 min
+    if (regVal == 0 && updateCount == 0){   //delai pour l'execution de "system"
+    updateCount = 3; // modified replacer par 10 pour 10 min
     eventType = "UPDTT"; // for testing purpose only delete
     writeCsv();   	 // for testing purpose only delete
-//    system("/Sterno/Software/gitUpdateRes.sh"); //actual result synch
+    system("/Sterno/Software/gitUpdateRes.sh"); //if  succesfful reg wil be 1
   }
     else {
     printf ("no avail\n");
     getTime();
-        if (Min != bglTime2){	//La minute a changee
-	readDelay = (readDelay - 1);
-	bglTime2 = Min;
-
-        }
-    }
-
-  }
-}
-
+        if (Min != updateTime){	//La minute a changee
+	updateCount = (updateCount - 1);
+	updateTime = Min;
+                              }
+         }
+                               }
+                          }
+///// Reset the Registery ever 24 Hours
+if (regCount == 5){	// genre 10 min
+regCount = 0;
 resetReg(); // reset le reg a toutes le 24 heures
-
-}
+                  }
+getTime();
+if (Min != regTime){
+regCount = (regCount + 1);
+regTime = Min;
+                   }
+        }  /// end of main While
 return 0;
 
 }
-// ou writereg?
+
 
