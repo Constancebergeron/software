@@ -123,7 +123,7 @@ else cout << "Unable to open File";
 
 
 int main(){
-
+// vas faloir initialiser les beagTime
 //int updatComplete = 0;
 
 int pwrGood = 0; 	//0 = ac present
@@ -131,7 +131,8 @@ int pwrTrig = 1;
 
 int bglCount = 0;
 int bglTime;
-int bglTime2;
+int bglTime2 = 0;
+//int bglTime3 = 0;
 
 getTime();
 eventType = "MS-Rst";
@@ -182,24 +183,23 @@ printf ("Testing in Progress\n");   //Dummy, delete
 
 if (updateComplete == 0){
   getTime();
+//  bglTime = Min;
   if (Hour >= 7 && Hour <= 22){ 
   readReg();
 // ligne prochainne marche pas
 if (regVal == 1){updateComplete = 1;}	// On fait ca pcq on veut pas caller readReg tout le temps
     if (regVal == 0 && readDelay == 0){
-    readDelay = 10; // modified replacer par 10 pour 10 min
+    readDelay = 3; // modified replacer par 10 pour 10 min
     eventType = "UPDTT"; // for testing purpose only delete
     writeCsv();   	 // for testing purpose only delete
-// manque genre bglcount
-    bglTime2 = Min;
-    system("/Sterno/Software/gitUpdateRes.sh"); //actual result synch
+//    system("/Sterno/Software/gitUpdateRes.sh"); //actual result synch
   }
     else {
     printf ("no avail\n");
     getTime();
         if (Min != bglTime2){	//La minute a changee
-	bglTime2 = Min;
 	readDelay = (readDelay - 1);
+	bglTime2 = Min;
 
         }
     }
