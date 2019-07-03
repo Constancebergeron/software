@@ -27,7 +27,8 @@
 #include <ctime>
 #include <string>
 #include <pthread.h>
-
+#include "GPIO.h"
+using namespace exploringBB;
 using namespace std;
 
 int Hour;
@@ -59,7 +60,10 @@ Month = (Month + 1);
 
 int probe(){
 // do some stuff
-probeRes = 0;
+GPIO inGPIO(115);
+inGPIO.setDirection(INPUT);
+probeRes = inGPIO.getValue();
+cout << "the val is: " << inGPIO.getValue() << endl; // for testing only delete
            }
 
 int writeCsv(){
@@ -107,20 +111,36 @@ else cout << "Unable to open File";
 ///////////////////// Main Function /////////////////////////
 int main(){
 
+int init = 0;
+
 int pwrGood = 0; 	//0 = ac present
-int pwrTrig = 1;
+int pwrTrig = 0;
+
+while (init <= 10, init ++){
+probe();
+}
 
 getTime();
 eventType = "MS-Rst";
 writeCsv();
+resetReg();
 
-int regTime = Min;
+int regTime = Hour;
 int updateTime = Min;
 int watchTime = Min;
+int powerTime = Min;
 int regCount = 0;
 //int updateCount = 0;
 int watchCount = 0;
+int powerCount = 0;
+
+
 while (1) {
+
+//if (init <= 9) {
+//init = (init + 1);
+//}
+
 getTime();
 
 // Start of Hourly Registration
@@ -129,7 +149,7 @@ if (Min != watchTime){
     watchTime = Min;
                      }
 
-if (watchCount == 1) {	//modified remettre a 60
+if (watchCount == 60) {	//modified remettre a 60
     getTime();
     eventType = "MH-Reg";
     writeCsv();
@@ -141,22 +161,39 @@ if (watchCount == 1) {	//modified remettre a 60
 				// if ac present relay open = pin float
 				// if ac not present relay closed = pin 5V
 				// if relay not installed, always float and program runs 
-probe();		// some code to probe Beagle pin
-if (pwrGood != probeRes) {
+
+
+/// The GPIO Need Initialisation, First result WILL be bad
+/// let's give it 10 Cycles, inside Main function
+/// Also, the subroutine code in it's present form is CPU intensive
+/// WRONG!!!! it is debounce time.. CPU 6% max still:
+/// Let's test it only once a Minute, also eliminates glitches from Hydro
+/// it will be ofset from the other timers?
+if (powerCount == 1){
+powerCount = 0;
+probe();
+
+if (pwrGood != probeRes && pwrTrig == 0) {
 getTime();
 eventType = "PWR-Out";
+//if (init == 10){
 writeCsv();
-pwrGood = 1;
-pwrTrig = 0;
-                         }
+pwrTrig = 1;
+//              }
+                                          }
 
-if (pwrTrig == 0 && probeRes == 0){
+if (pwrTrig == 1 && probeRes == 0){
 getTime();
 eventType = "PWR-Bon";
 writeCsv();
-pwrTrig = 1;
-                                  } 
-
+pwrTrig = 0;
+                                  }
+ }// end of powerCount if
+getTime();
+if (Min != powerTime){
+powerCount = (powerCount + 1);
+powerTime = Min;
+}
 
 printf ("Testing in Progress\n");   //Dummy, delete
 
@@ -165,11 +202,11 @@ printf ("Testing in Progress\n");   //Dummy, delete
 
 if (updateComplete == 0){
   getTime();
-  if (Hour >= 7 && Hour <= 22){ 
+  if (Hour >= 7 && Hour <= 16){ 
   readReg();
 if (regVal == 1){updateComplete = 1;}	// On fait ca pcq on veut pas caller readReg tout le temps
     if (regVal == 0 && updateCount == 0){   //delai pour l'execution de "system"
-    updateCount = 3; // modified replacer par 10 pour 10 min
+    updateCount = 2; // will try to update every  [value] minutes
     eventType = "UPDTT"; // for testing purpose only delete
     writeCsv();   	 // for testing purpose only delete
     system("/Sterno/Software/gitUpdateRes.sh"); //if  succesfful reg wil be 1
@@ -185,14 +222,14 @@ if (regVal == 1){updateComplete = 1;}	// On fait ca pcq on veut pas caller readR
                                }
                           }
 ///// Reset the Registery ever 24 Hours
-if (regCount == 5){	// genre 10 min
+if (regCount == 2){	// genre 10 min
 regCount = 0;
 resetReg(); // reset le reg a toutes le 24 heures
                   }
 getTime();
-if (Min != regTime){
+if (Hour != regTime){
 regCount = (regCount + 1);
-regTime = Min;
+regTime = Hour;
                    }
         }  /// end of main While
 return 0;
