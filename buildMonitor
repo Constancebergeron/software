@@ -1,5 +1,5 @@
-#!/bin/sh
+#!/bin/bash
 
-g++ Monitor.cpp -o monitor
+g++ Monitor.cpp GPIO.cpp -o monitor -pthread
 
 

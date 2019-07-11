@@ -59,11 +59,11 @@ Month = (Month + 1);
 }
 
 int probe(){
-// do some stuff
+
 GPIO inGPIO(115);
 inGPIO.setDirection(INPUT);
 probeRes = inGPIO.getValue();
-cout << "the val is: " << inGPIO.getValue() << endl; // for testing only delete
+//cout << "the val is: " << inGPIO.getValue() << endl; // for testing only delete
            }
 
 int writeCsv(){
@@ -130,16 +130,11 @@ int updateTime = Min;
 int watchTime = Min;
 int powerTime = Min;
 int regCount = 0;
-//int updateCount = 0;
 int watchCount = 0;
 int powerCount = 0;
 
 
 while (1) {
-
-//if (init <= 9) {
-//init = (init + 1);
-//}
 
 getTime();
 
@@ -156,17 +151,10 @@ if (watchCount == 60) {	//modified remettre a 60
     watchCount = 0;
                      }
 // End of Hourly Registration
+
+
 //Power Good
-//printf ("checking power"); 	// dummy, probe if beagle pin is 0 or 1
-				// if ac present relay open = pin float
-				// if ac not present relay closed = pin 5V
-				// if relay not installed, always float and program runs 
-
-
-/// The GPIO Need Initialisation, First result WILL be bad
-/// let's give it 10 Cycles, inside Main function
-/// Also, the subroutine code in it's present form is CPU intensive
-/// WRONG!!!! it is debounce time.. CPU 6% max still:
+//printf ("checking power");
 /// Let's test it only once a Minute, also eliminates glitches from Hydro
 /// it will be ofset from the other timers?
 if (powerCount == 1){
@@ -206,13 +194,13 @@ if (updateComplete == 0){
   readReg();
 if (regVal == 1){updateComplete = 1;}	// On fait ca pcq on veut pas caller readReg tout le temps
     if (regVal == 0 && updateCount == 0){   //delai pour l'execution de "system"
-    updateCount = 2; // will try to update every  [value] minutes
-    eventType = "UPDTT"; // for testing purpose only delete
-    writeCsv();   	 // for testing purpose only delete
+    updateCount = 10; // will try to update every  [value] minutes
+//    eventType = "UPDTT"; // for testing purpose only delete
+//    writeCsv();   	 // for testing purpose only delete
     system("/Sterno/Software/gitUpdateRes.sh"); //if  succesfful reg wil be 1
   }
     else {
-    printf ("no avail\n");
+//    printf ("no avail\n");
     getTime();
         if (Min != updateTime){	//La minute a changee
 	updateCount = (updateCount - 1);
@@ -221,8 +209,8 @@ if (regVal == 1){updateComplete = 1;}	// On fait ca pcq on veut pas caller readR
          }
                                }
                           }
-///// Reset the Registery ever 24 Hours
-if (regCount == 2){	// genre 10 min
+///// Reset the Registery every 24 Hours
+if (regCount == 24){	//Reset le registry a toutes le 24 heures
 regCount = 0;
 resetReg(); // reset le reg a toutes le 24 heures
                   }
