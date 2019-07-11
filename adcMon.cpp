@@ -29,15 +29,20 @@
 
 using namespace std;
 
+char rData[4] = {0};
 char data[2] = {0};
 char config[1] = {0x00};
 int channel = 1;
 int file;
 int raw_adc;
+int rawRegister;
 int minVal1 = 3000;
 int minVal2 = 3000;
 int delay1;
 int delay2;
+int isReady = 0;
+int disable1 = 0;
+int disable2 = 0;
 
 string eventType = "blank";
 
@@ -82,23 +87,26 @@ int evaluate1(){
 	if(raw_adc < minVal1){
 	minVal1 = raw_adc;
 	}
-//	printf("The Minimum value = %d \n",minVal1);  //For debug purpose only
+	printf("The Minimum value = %d \n",minVal1);  //For debug purpose only
 	
 	if(raw_adc < 600 && zapOn1 == 0){
 	zapOn1 = 1;
+disable2 = 1;
 	getTime();
 	delay1 = Sec;
 	} 
 	getTime();
 	if(zapOn1 == 1 && raw_adc > 600 && Sec != delay1){
 	zapOff1 = 1;
+//disable2 = 0;
 	}
 	if(zapOn1 == 1 && zapOff1 == 1){
 	eventType = "ZapCh01";
 	getTime();
 	writeCsv();
 	zapOn1 = 0;
-	zapOff1 =0;
+	zapOff1 = 0;
+disable2 = 0;
 	}
 }
 
@@ -107,24 +115,47 @@ int evaluate2(){
 	if(raw_adc < minVal2){
 	minVal2 = raw_adc;
 	}
-//	printf("The Minimum value ch 02 = %d \n",minVal2);  // For debug purpose only
+	printf("The Minimum value ch 02 = %d \n",minVal2);  // For debug purpose only
 
 	if(raw_adc < 600 && zapOn2 == 0){
 	zapOn2 = 1;
-	getTime();
+disable1 = 1;
+	getTime();	//peut etre plus besoin
 	delay2 = Sec;
 	} 
 	getTime();
 	if(zapOn2 == 1 && raw_adc > 600 && Sec != delay2){
 	zapOff2 = 1;
+//disable1 = 0;
 	}
 	if(zapOn2 == 1 && zapOff2 == 1){
 	eventType = "ZapCh02";
 	getTime();
 	writeCsv();
 	zapOn2 = 0;
-	zapOff2 =0;
+	zapOff2 = 0;
+disable1 = 0;
 	}
+}
+
+
+int ready(){
+// cheque si la convertion est finie
+if(read(file, rData, 4) != 4){
+printf("Error while reading Register \n");
+}
+else{
+rawRegister = rData[3];
+printf("The value of MSB register is %d \n",rawRegister);
+
+	if(rawRegister >= 128){
+	isReady = 0;
+	}
+	else{
+	isReady = 1;
+	}
+printf(" isReady = %d \n",isReady);
+}
 }
 
 int rread(){
@@ -164,20 +195,33 @@ int main()
     
 	while(1) {
         
-    
+
+	if(disable2 == 0){    
 	channel = 2;
 	config[0] = 0x80; // Config = 0X00 chan 01 one shot 12 bits new convertion
-	write(file, config, 1);    
+	write(file, config, 1);
+while(isReady == 0){
+	ready();
+	usleep(1000);
+}
+	isReady = 0;    
 	rread();
 	evaluate2();
-	usleep(3500);
+	}
+
+	if(disable1 == 0){
 	channel = 1;
 	config[0] = 0xa0; // channel 2 one shot 12 bits new convertion
 	write(file, config, 1);
+while(isReady == 0){
+ready();
+usleep(1000);
+}
+	isReady =0;
 	rread();
 	evaluate1();
-	usleep(3500);
-	//channel = 1;
+	}
+
 
               }	// end de Whie
 }

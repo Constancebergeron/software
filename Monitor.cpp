@@ -68,7 +68,7 @@ probeRes = inGPIO.getValue();
 
 int writeCsv(){
 	ofstream myfile;
-	myfile.open ("/Sterno/results/bigul.csv", ios::in | ios::app);
+	myfile.open ("/Sterno/results/zapResults.csv", ios::in | ios::app);
 	if (myfile.is_open()){
 		printf ("Registering Event \n");
 		myfile << Month << "," << Date << "," << Hour << "," << Min << "," << Sec << "," << eventType <<  "\n";
@@ -189,12 +189,12 @@ printf ("Testing in Progress\n");   //Dummy, delete
 ////// Start of Update Sequence /////////
 
 if (updateComplete == 0){
-  getTime();
-  if (Hour >= 7 && Hour <= 16){ 
-  readReg();
-if (regVal == 1){updateComplete = 1;}	// On fait ca pcq on veut pas caller readReg tout le temps
-    if (regVal == 0 && updateCount == 0){   //delai pour l'execution de "system"
-    updateCount = 10; // will try to update every  [value] minutes
+	getTime();
+	if (Hour >= 7 && Hour <= 16){ 
+		readReg();
+	if (regVal == 1){updateComplete = 1;}	// On fait ca pcq on veut pas caller readReg tout le temps
+    	if (regVal == 0 && updateCount == 0){   //delai pour l'execution de "system"
+   	 updateCount = 10; // will try to update every  [value] minutes
 //    eventType = "UPDTT"; // for testing purpose only delete
 //    writeCsv();   	 // for testing purpose only delete
     system("/Sterno/Software/gitUpdateRes.sh"); //if  succesfful reg wil be 1
